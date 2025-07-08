@@ -47,18 +47,13 @@ public class TicketCreationRequest {
     private Instant openUntil;
 
     @JsonProperty("max_views")
-    private Integer maxViews = 1;
+    private Integer maxViews;
 
 
     // Ticket configuration
     @JsonProperty("ticket_type")
-    private TicketType ticketType = TicketType.SINGLE;
+    private TicketType ticketType;
 
     @JsonProperty("allow_replies")
-    private boolean allowReplies = false;
-
-
-    // Parent ticket for replies (if applicable)
-    @JsonProperty("parent_ticket_id")
-    private String parentTicketId;
+    private boolean allowReplies;
 }

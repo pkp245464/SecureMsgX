@@ -53,7 +53,7 @@ public class TicketCreationResponse {
     private EncryptionAlgo encryptionAlgo;
 
     @JsonProperty("passkey")
-    private List<String>passkey;
+    private List<PasskeyDto>passkey;
 
     @JsonProperty("salt")
     private String salt;

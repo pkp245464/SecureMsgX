@@ -3,6 +3,7 @@ package com.secure.MsgX.features.controller;
 import com.secure.MsgX.features.dto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.TicketCreationResponse;
 import com.secure.MsgX.features.service.MsgXService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +21,11 @@ public class MsgXController {
     private final MsgXService msgXService;
 
     @PostMapping("/new-ticket")
-    public ResponseEntity<TicketCreationResponse> createTicket(@RequestBody TicketCreationRequest ticketCreationRequest) {
+    public ResponseEntity<TicketCreationResponse> createTicket(@RequestBody TicketCreationRequest ticketCreationRequest,
+                                                               HttpServletRequest httpServletRequest) {
         log.info("MsgXController::createTicket - Received ticket creation request for userId: {}",ticketCreationRequest);
-        TicketCreationResponse response = msgXService.createSecureTicket(ticketCreationRequest);
+        TicketCreationResponse response = msgXService.createSecureTicket(ticketCreationRequest, httpServletRequest);
         log.info("MsgXController::createTicket - Ticket created successfully with ticketId: {}", response.getTicketId());
         return ResponseEntity.ok(response);
     }
-
 }

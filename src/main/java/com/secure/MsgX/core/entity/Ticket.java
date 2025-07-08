@@ -18,10 +18,21 @@ import java.util.List;
 @Table(name = "ticket")
 public class Ticket {
 
+    /**
+     * Internal ticket ID used only by the sender.
+     * Can be used to immediately revoke or manage ticket access.
+     */
     @Id
     @Column(name = "ticket_id")
     @GeneratedValue(strategy = GenerationType.UUID)
     private String ticketId;
+
+    /**
+     * Public ticket number shared with recipients.
+     * Used to retrieve or access the ticket contents.
+     */
+    @Column(name = "ticket_number")
+    private String ticketNumber;
 
     @CreationTimestamp
     @Column(name = "created_at")
@@ -53,10 +64,10 @@ public class Ticket {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "ticket_type")
-    private TicketType ticketType = TicketType.SINGLE;
+    private TicketType ticketType;
 
     @Column(name = "max_views")
-    private Integer maxViews = 1;
+    private Integer maxViews;
 
     @Column(name = "count_views")
     private Integer countViews = 0;
