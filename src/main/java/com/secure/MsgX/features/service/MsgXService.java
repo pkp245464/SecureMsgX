@@ -6,4 +6,5 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface MsgXService {
     TicketCreationResponse createSecureTicket(TicketCreationRequest ticketCreationRequest, HttpServletRequest httpServletRequest);
+    String permanentlyDeleteTicket(String ticketId);
 }
