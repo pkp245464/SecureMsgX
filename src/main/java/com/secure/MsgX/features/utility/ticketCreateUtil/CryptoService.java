@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.utility;
+package com.secure.MsgX.features.utility.ticketCreateUtil;
 
 import com.secure.MsgX.core.enums.EncryptionAlgo;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;

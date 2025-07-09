@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.dto;
+package com.secure.MsgX.features.dto.ticketCreateDto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

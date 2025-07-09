@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.dto;
+package com.secure.MsgX.features.dto.ticketCreateDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.secure.MsgX.core.enums.EncryptionAlgo;

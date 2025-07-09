@@ -1,8 +1,7 @@
-package com.secure.MsgX.features.utility;
+package com.secure.MsgX.features.utility.ticketCreateUtil;
 
-import com.secure.MsgX.core.enums.TicketType;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
-import com.secure.MsgX.features.dto.TicketCreationRequest;
+import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 

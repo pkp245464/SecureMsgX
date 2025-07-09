@@ -1,7 +1,7 @@
 package com.secure.MsgX.features.controller;
 
-import com.secure.MsgX.features.dto.TicketCreationRequest;
-import com.secure.MsgX.features.dto.TicketCreationResponse;
+import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
+import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
 import com.secure.MsgX.features.service.MsgXService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;

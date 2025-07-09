@@ -1,5 +1,4 @@
-package com.secure.MsgX.features.utility;
-import org.springframework.stereotype.Component;
+package com.secure.MsgX.features.utility.ticketCreateUtil;
 
 import java.security.SecureRandom;
 
