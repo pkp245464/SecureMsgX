@@ -74,5 +74,5 @@ public class TicketCreationResponse {
      * Increments only when accessed using the ticketNumber, not when accessed using the ticketId.
      */
     @JsonProperty("count_views")
-    private Integer countViews;
+    private long countViews;
 }

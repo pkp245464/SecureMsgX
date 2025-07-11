@@ -47,7 +47,7 @@ public class TicketCreationRequest {
     private Instant openUntil;
 
     @JsonProperty("max_views")
-    private Integer maxViews;
+    private Long maxViews;
 
 
     // Ticket configuration

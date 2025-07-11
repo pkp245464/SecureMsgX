@@ -86,7 +86,7 @@ public class TicketCreationRequestValidator {
     private void validateMaxViews(TicketCreationRequest request) {
         if (Objects.isNull(request.getMaxViews()) || request.getMaxViews() < 1) {
             log.info("TicketCreationRequestValidator::validateMaxViews - maxViews is null or less than 1, setting default value to 1");
-            request.setMaxViews(1);
+            request.setMaxViews(1L);
         }
     }
 
@@ -106,13 +106,13 @@ public class TicketCreationRequestValidator {
         switch (request.getTicketType()) {
             case SECURE_SINGLE:
                 request.setAllowReplies(false);
-                request.setMaxViews(1);
+                request.setMaxViews(1L);
                 log.info("TicketCreationRequestValidator::validateReplyTicketFields - Configured SECURE_SINGLE ticket: maxViews=1, allowReplies=false");
                 break;
 
             case SINGLE:
                 request.setAllowReplies(false);
-                request.setMaxViews(5);
+                request.setMaxViews(5L);
                 log.info("TicketCreationRequestValidator::validateReplyTicketFields - Configured SINGLE ticket: maxViews=5, allowReplies=false");
                 break;
 
@@ -126,6 +126,15 @@ public class TicketCreationRequestValidator {
                     log.error("TicketCreationRequestValidator::validateReplyTicketFields failed - maxViews is required for BROADCAST tickets");
                     throw new GlobalMsgXExceptions("maxViews is required for BROADCAST tickets");
                 }
+
+                Long currentBroadcastCount = request.getMaxViews();
+                long maxAllowedBroadcasts = 1000000000L;
+
+                if (currentBroadcastCount >= maxAllowedBroadcasts) {
+                    log.error("TicketCreationRequestValidator::validateReplyTicketFields failed - Broadcast ticket limit reached");
+                    throw new GlobalMsgXExceptions("Cannot create new BROADCAST ticket: maximum allowed broadcast tickets (" + maxAllowedBroadcasts + ") reached.");
+                }
+
                 request.setAllowReplies(false);
                 log.info("TicketCreationRequestValidator::validateReplyTicketFields - Configured BROADCAST ticket: allowReplies=false");
                 break;

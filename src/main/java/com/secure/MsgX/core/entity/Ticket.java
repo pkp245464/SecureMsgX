@@ -67,10 +67,10 @@ public class Ticket {
     private TicketType ticketType;
 
     @Column(name = "max_views")
-    private Integer maxViews;
+    private Long maxViews;
 
     @Column(name = "count_views")
-    private Integer countViews = 0;
+    private Long countViews = 0L;
 
     @Column(name = "encrypted_message", columnDefinition = "TEXT")
     private String encryptedMessage;

@@ -36,7 +36,7 @@ public class MsgXController {
         return ResponseEntity.ok(result);
     }
 
-    //NOTE: Handle For SINGLE & SECURE_SINGLE TICKET ONLY
+    //NOTE: Handle For SINGLE & SECURE_SINGLE TICKET and BROADCAST ONLY
     @PostMapping("/view-ticket")
     public ResponseEntity<ViewTicketResponse> viewTicket(@RequestBody ViewTicketRequest request,
                                                          HttpServletRequest httpRequest) {

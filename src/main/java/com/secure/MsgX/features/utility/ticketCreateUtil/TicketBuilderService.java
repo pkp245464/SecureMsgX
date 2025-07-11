@@ -41,7 +41,7 @@ public class TicketBuilderService {
 
         ticket.setTicketStatus(TicketStatus.OPEN);
 
-        ticket.setCountViews(0);
+        ticket.setCountViews(0L);
 
         String salt = request.getSalt() != null ? request.getSalt() : cryptoService.generateSalt();
         ticket.setSalt(salt);

@@ -145,8 +145,8 @@ public class MsgXServiceImpl implements MsgXService{
 
     private void validateTicketType(Ticket ticket) {
         TicketType ticketType = ticket.getTicketType();
-        if(ticketType != TicketType.SINGLE && ticketType != TicketType.SECURE_SINGLE) {
-            throw new GlobalMsgXExceptions("Invalid ticket type for this operation. " + "This endpoint supports only SINGLE and SECURE_SINGLE ticket type.");
+        if(ticketType != TicketType.SINGLE && ticketType != TicketType.SECURE_SINGLE && ticketType != TicketType.BROADCAST) {
+            throw new GlobalMsgXExceptions("Invalid ticket type for this operation. " + "This endpoint supports only SINGLE, SECURE_SINGLE and BROADCAST ticket type.");
         }
     }
 

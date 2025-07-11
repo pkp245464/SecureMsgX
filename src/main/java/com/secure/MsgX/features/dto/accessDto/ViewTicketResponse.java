@@ -24,10 +24,10 @@ public class ViewTicketResponse {
     private Instant openUntil;
 
     @JsonProperty("max_views")
-    private Integer maxViews;
+    private Long maxViews;
 
     @JsonProperty("remaining_views")
-    private Integer remainingViews;
+    private Long remainingViews;
 
     @JsonProperty("ticket_status")
     private String ticketStatus;
