@@ -3,6 +3,7 @@ package com.secure.MsgX.features.utility.commonUtil;
 import com.secure.MsgX.core.enums.EncryptionAlgo;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +21,9 @@ import java.security.Security;
 import java.security.spec.KeySpec;
 import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CryptoService {
     static {
@@ -42,17 +45,38 @@ public class CryptoService {
                                  String salt,
                                  EncryptionAlgo algorithm) throws GlobalMsgXExceptions {
         try {
-            SecretKey secretKey = deriveKey(passkeys, salt, algorithm);
+            // Normalize inputs
+            String normalizedSalt = salt.trim();
+            List<String> normalizedPasskeys = passkeys.stream()
+                    .map(String::trim)
+                    .sorted()
+                    .toList();
+
+            log.info("CryptoService::EncryptContent - Encrypting with salt: '{}' and passkeys: {}", normalizedSalt, normalizedPasskeys);
+
+            // Key derivation
+            String keyInput = String.join("|", normalizedPasskeys) + "|" + normalizedSalt;
+            byte[] saltBytes = normalizedSalt.getBytes(StandardCharsets.UTF_8);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(
+                    keyInput.toCharArray(),
+                    saltBytes,
+                    PBKDF2_ITERATIONS,
+                    algorithm.getKeyLength() * 8
+            );
+
+            SecretKey secretKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+
+            // Encryption
             byte[] iv = generateIV();
             lastGeneratedIV = iv;
 
             Cipher cipher = Cipher.getInstance(algorithm.getTransformation(), "BC");
-            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
 
-            byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
-            // CHANGED: Convert to Base64 string before returning
-            return Base64.getEncoder().encodeToString(encryptedBytes);
+            byte[] encrypted = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
             throw new GlobalMsgXExceptions("Encryption failed: " + e.getMessage(), e);
         }
@@ -65,18 +89,44 @@ public class CryptoService {
                                  String base64Iv,
                                  EncryptionAlgo algorithm) throws GlobalMsgXExceptions {
         try {
-            // CHANGED: Decode Base64 strings to bytes
-            byte[] cipherText = Base64.getDecoder().decode(base64CipherText);
-            byte[] iv = Base64.getDecoder().decode(base64Iv);
+            // Normalize exactly as during encryption
+            String normalizedSalt = salt.trim();
+            List<String> normalizedPasskeys = passkeys.stream()
+                    .map(String::trim)
+                    .sorted()
+                    .toList();
 
-            SecretKey secretKey = deriveKey(passkeys, salt, algorithm);
+            log.info("CryptoService::DecryptContent - Decrypting with salt: '{}' and passkeys: {}", normalizedSalt, normalizedPasskeys);
+
+            // Key derivation (must match encryption exactly)
+            String keyInput = String.join("|", normalizedPasskeys) + "|" + normalizedSalt;
+            byte[] saltBytes = normalizedSalt.getBytes(StandardCharsets.UTF_8);
+
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+            KeySpec spec = new PBEKeySpec(
+                    keyInput.toCharArray(),
+                    saltBytes,
+                    PBKDF2_ITERATIONS,
+                    algorithm.getKeyLength() * 8
+            );
+
+            SecretKey secretKey = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+
+            // Decryption
+            byte[] iv = Base64.getDecoder().decode(base64Iv);
+            byte[] cipherText = Base64.getDecoder().decode(base64CipherText);
+
             Cipher cipher = Cipher.getInstance(algorithm.getTransformation(), "BC");
-            GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
-            cipher.init(Cipher.DECRYPT_MODE, secretKey, gcmParameterSpec);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
 
             return new String(cipher.doFinal(cipherText), StandardCharsets.UTF_8);
-        } catch (Exception e) {
-            throw new GlobalMsgXExceptions("Decryption failed: " + e.getMessage(), e);
+        }
+        catch (Exception e) {
+            log.error("CryptoService::DecryptContent - Decryption failed. Error: {}", e.getMessage(), e);
+            throw new GlobalMsgXExceptions("Decryption failed. Please verify: " +
+                    "1. The exact passkey is correct (including case and whitespace)\n" +
+                    "2. The ticket hasn't been corrupted\n" +
+                    "Technical details: " + e.getMessage());
         }
     }
 
@@ -85,20 +135,24 @@ public class CryptoService {
     }
 
     private SecretKey deriveKey(List<String> passkeys, String salt, EncryptionAlgo algorithm) throws Exception {
-        String combinedKey = String.join("", passkeys);
-        byte[] saltBytes = salt.getBytes(StandardCharsets.UTF_8);
+        // Create a consistent key derivation input
+        String combinedInput = passkeys.stream()
+                .map(String::trim)
+                .sorted()
+                .collect(Collectors.joining("::")) + "||" + salt;
 
-        // Use PBKDF2 for key derivation
+        log.debug("Key derivation input: {}", combinedInput);
+
+        byte[] saltBytes = salt.getBytes(StandardCharsets.UTF_8);
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec spec = new PBEKeySpec(
-                combinedKey.toCharArray(),
+                combinedInput.toCharArray(),
                 saltBytes,
                 PBKDF2_ITERATIONS,
                 algorithm.getKeyLength() * 8
         );
 
-        byte[] keyBytes = factory.generateSecret(spec).getEncoded();
-        return new SecretKeySpec(keyBytes, algorithm.getAlgorithmName());
+        return new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
     }
 
     public String hashPasskey(String passkey) {

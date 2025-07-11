@@ -22,7 +22,7 @@ public class ReadLog {
     @Column(name = "read_at")
     private Instant readAt;
 
-    @Column(name = "read_by_ip_address", columnDefinition = "INET")
+    @Column(name = "read_by_ip_address", columnDefinition = "inet")
     private String readByIpAddress;
 
     @ManyToOne(fetch = FetchType.LAZY)

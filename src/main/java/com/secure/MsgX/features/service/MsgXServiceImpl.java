@@ -206,12 +206,16 @@ public class MsgXServiceImpl implements MsgXService{
 
     private ViewTicketResponse processTicketView(Ticket ticket, List<PasskeyEntry> passkeys, String clientIp) {
         try {
-            // 1. Decrypt content
+            List<String> passkeyValues = passkeys.stream()
+                    .sorted(Comparator.comparingInt(PasskeyEntry::getOrder))
+                    .map(p -> p.getValue().trim())
+                    .toList();
+
             String decryptedContent = cryptoService.decryptContent(
-                    ticket.getEncryptedMessage(), // Base64 string
-                    passkeys.stream().map(PasskeyEntry::getValue).toList(),
+                    ticket.getEncryptedMessage(),
+                    passkeyValues,
                     ticket.getSalt(),
-                    ticket.getIv(), // Base64 string
+                    ticket.getIv(),
                     ticket.getEncryptionAlgo()
             );
 
@@ -248,15 +252,19 @@ public class MsgXServiceImpl implements MsgXService{
     }
 
     private void createReadLog(Ticket ticket, String clientIp) {
-        ReadLog readLog = new ReadLog();
-        readLog.setTicket(ticket);
+        try {
+            ReadLog readLog = new ReadLog();
+            readLog.setTicket(ticket);
 
-        String hashedIp = IpAddressService.hashIpAddress(clientIp);
-        String saltedHashedIp = buildIpHashSalt(ticket.getSalt(), hashedIp);
-        readLog.setReadByIpAddress(saltedHashedIp);
+            // Convert IP to PostgreSQL inet compatible format
+            String pgInetAddress = clientIp.replaceFirst("^0:0:0:0:0:0:0:1$", "127.0.0.1");
+            readLog.setReadByIpAddress(pgInetAddress);
 
-        readLogRepository.save(readLog);
-        log.info("MsgXServiceImpl::CreateReadLog - Created read log for ticket {} from IP {}", ticket.getTicketId(), clientIp);
+            readLogRepository.save(readLog);
+            log.info("MsgXServiceImpl::CreateReadLog - Created read log for ticket {}", ticket.getTicketId());
+        } catch (Exception e) {
+            log.error("MsgXServiceImpl::CreateReadLog - Failed to create read log: {}", e.getMessage());
+        }
     }
 
     private String buildIpHashSalt(String userSalt, String hashIpAddress) {
