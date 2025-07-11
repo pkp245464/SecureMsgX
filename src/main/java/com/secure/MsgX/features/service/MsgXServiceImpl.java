@@ -256,13 +256,16 @@ public class MsgXServiceImpl implements MsgXService{
             ReadLog readLog = new ReadLog();
             readLog.setTicket(ticket);
 
-            // Convert IP to PostgreSQL inet compatible format
-            String pgInetAddress = clientIp.replaceFirst("^0:0:0:0:0:0:0:1$", "127.0.0.1");
-            readLog.setReadByIpAddress(pgInetAddress);
+            String hashedIp = IpAddressService.hashIpAddress(clientIp);
+            String entropy = UniqueIdGenerators.UlidGenerator.generateUlid();
+            String rawValue = ticket.getSalt() + ":" + entropy + ":" + hashedIp;
+            String fullyMixed = IpAddressService.shuffleAndShiftHash(rawValue, entropy);
+            readLog.setReadByIpAddress(fullyMixed);
 
             readLogRepository.save(readLog);
             log.info("MsgXServiceImpl::CreateReadLog - Created read log for ticket {}", ticket.getTicketId());
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             log.error("MsgXServiceImpl::CreateReadLog - Failed to create read log: {}", e.getMessage());
         }
     }

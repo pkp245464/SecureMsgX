@@ -10,6 +10,7 @@ import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
 import com.secure.MsgX.features.repository.PasskeyRepository;
 import com.secure.MsgX.features.utility.commonUtil.CryptoService;
+import com.secure.MsgX.features.utility.commonUtil.IpAddressService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,8 @@ public class TicketBuilderService {
 
     private String buildIpHashSalt(String userSalt, String hashIpAddress) {
         String uuidEntropy = UniqueIdGenerators.UlidGenerator.generateUlid();
-        return userSalt + ":" + uuidEntropy + ":" + hashIpAddress;
+        String fullLine = userSalt  + ":" + hashIpAddress;
+        return IpAddressService.shuffleAndShiftHash(fullLine, uuidEntropy);
     }
 
     public void encryptMessageContent(TicketCreationRequest request, Ticket ticket) {

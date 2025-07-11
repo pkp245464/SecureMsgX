@@ -2,10 +2,12 @@ package com.secure.MsgX.features.utility.commonUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Objects;
+import java.util.Random;
 
 public class IpAddressService {
 
@@ -33,6 +35,35 @@ public class IpAddressService {
         }
     }
 
+    public static String shuffleAndShiftHash(String input, String entropySeed) {
+        String base64 = Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+        char[] chars = base64.toCharArray();
+
+        long seed = 0;
+        for (byte b : entropySeed.getBytes(StandardCharsets.UTF_8)) {
+            seed = seed * 31 + b;
+        }
+        Random random = new Random(seed);
+
+        final int MIN = 32, MAX = 126, RANGE = MAX - MIN + 1;
+        for (int i = 0; i < chars.length; i++) {
+            int shift = random.nextInt(5, 15);
+            int base = chars[i] - MIN;
+            int shifted = random.nextBoolean()
+                    ? (base + shift) % RANGE
+                    : (base - shift + RANGE) % RANGE;
+            chars[i] = (char) (shifted + MIN);
+        }
+
+        for (int i = chars.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char temp = chars[i];
+            chars[i] = chars[j];
+            chars[j] = temp;
+        }
+
+        return new String(chars);
+    }
 
     public static String extractAndHashIp(HttpServletRequest request) {
         return hashIpAddress(extractClientIp(request));

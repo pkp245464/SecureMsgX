@@ -82,7 +82,6 @@ public class CryptoService {
         }
     }
 
-    // CHANGED: Parameters changed to accept Base64 strings
     public String decryptContent(String base64CipherText,
                                  List<String> passkeys,
                                  String salt,

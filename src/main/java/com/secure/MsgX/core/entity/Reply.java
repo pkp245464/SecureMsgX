@@ -21,7 +21,7 @@ public class Reply {
     private Instant createdAt;
 
     @Column(name = "encrypted_content")
-    private byte[] encryptedContent;
+    private String encryptedContent;
 
     @Column(name = "reply_ip_address")
     private String replyIpAddress;
