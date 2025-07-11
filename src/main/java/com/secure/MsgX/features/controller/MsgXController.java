@@ -36,7 +36,8 @@ public class MsgXController {
         return ResponseEntity.ok(result);
     }
 
-    //NOTE: Handle For SINGLE & SECURE_SINGLE TICKET and BROADCAST ONLY
+    // NOTE: Currently handles SINGLE, SECURE_SINGLE, and BROADCAST ticket types.
+    // TODO: Extend this endpoint to handle THREAD and GROUP ticket types as well.
     @PostMapping("/view-ticket")
     public ResponseEntity<ViewTicketResponse> viewTicket(@RequestBody ViewTicketRequest request,
                                                          HttpServletRequest httpRequest) {
