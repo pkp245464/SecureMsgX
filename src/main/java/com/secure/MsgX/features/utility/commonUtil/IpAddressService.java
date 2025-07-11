@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.utility.ticketCreateUtil;
+package com.secure.MsgX.features.utility.commonUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 

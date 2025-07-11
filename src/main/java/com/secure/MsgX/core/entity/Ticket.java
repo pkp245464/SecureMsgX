@@ -72,8 +72,8 @@ public class Ticket {
     @Column(name = "count_views")
     private Integer countViews = 0;
 
-    @Column(name = "encrypted_message")
-    private byte[] encryptedMessage;
+    @Column(name = "encrypted_message", columnDefinition = "TEXT")
+    private String encryptedMessage;
 
     @Column(name = "salt")
     private String salt;
@@ -90,9 +90,8 @@ public class Ticket {
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReadLog> readLogs;
 
-    @Lob
-    @Column(name = "initialization_vector")
-    private byte[] iv; // IV = Initialization Vector
+    @Column(name = "initialization_vector", columnDefinition = "TEXT")
+    private String iv; // IV = Initialization Vector
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_ticket_id")

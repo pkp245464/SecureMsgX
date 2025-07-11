@@ -17,9 +17,6 @@ public class ViewTicketResponse {
     @JsonProperty("decrypted_content")
     private String decryptedContent;
 
-    @JsonProperty("expires_at")
-    private Instant expiresAt;
-
     @JsonProperty("open_from")
     private Instant openFrom;
 
@@ -39,5 +36,5 @@ public class ViewTicketResponse {
     private Instant readAt;
 
     @JsonProperty("security_warning")
-    private String securityWarning = "This message will self-destruct after viewing";
+    private String securityMessage;
 }

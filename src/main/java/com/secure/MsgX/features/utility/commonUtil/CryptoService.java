@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.utility.ticketCreateUtil;
+package com.secure.MsgX.features.utility.commonUtil;
 
 import com.secure.MsgX.core.enums.EncryptionAlgo;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
@@ -37,12 +37,11 @@ public class CryptoService {
     private byte[] lastGeneratedIV;
     private final PasswordEncoder passwordEncoder = Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8();
 
-    public byte[] encryptContent(String plainText,
+    public String encryptContent(String plainText,
                                  List<String> passkeys,
                                  String salt,
                                  EncryptionAlgo algorithm) throws GlobalMsgXExceptions {
         try {
-            // Use PBKDF2 for proper key derivation
             SecretKey secretKey = deriveKey(passkeys, salt, algorithm);
             byte[] iv = generateIV();
             lastGeneratedIV = iv;
@@ -51,18 +50,25 @@ public class CryptoService {
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
             cipher.init(Cipher.ENCRYPT_MODE, secretKey, gcmParameterSpec);
 
-            return cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
+            // CHANGED: Convert to Base64 string before returning
+            return Base64.getEncoder().encodeToString(encryptedBytes);
         } catch (Exception e) {
             throw new GlobalMsgXExceptions("Encryption failed: " + e.getMessage(), e);
         }
     }
 
-    public String decryptContent(byte[] cipherText,
+    // CHANGED: Parameters changed to accept Base64 strings
+    public String decryptContent(String base64CipherText,
                                  List<String> passkeys,
                                  String salt,
-                                 byte[] iv,
+                                 String base64Iv,
                                  EncryptionAlgo algorithm) throws GlobalMsgXExceptions {
         try {
+            // CHANGED: Decode Base64 strings to bytes
+            byte[] cipherText = Base64.getDecoder().decode(base64CipherText);
+            byte[] iv = Base64.getDecoder().decode(base64Iv);
+
             SecretKey secretKey = deriveKey(passkeys, salt, algorithm);
             Cipher cipher = Cipher.getInstance(algorithm.getTransformation(), "BC");
             GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH, iv);
@@ -72,6 +78,10 @@ public class CryptoService {
         } catch (Exception e) {
             throw new GlobalMsgXExceptions("Decryption failed: " + e.getMessage(), e);
         }
+    }
+
+    public String getLastGeneratedIVAsBase64() {
+        return Base64.getEncoder().encodeToString(lastGeneratedIV);
     }
 
     private SecretKey deriveKey(List<String> passkeys, String salt, EncryptionAlgo algorithm) throws Exception {

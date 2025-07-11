@@ -1,5 +1,7 @@
 package com.secure.MsgX.features.controller;
 
+import com.secure.MsgX.features.dto.accessDto.ViewTicketRequest;
+import com.secure.MsgX.features.dto.accessDto.ViewTicketResponse;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
 import com.secure.MsgX.features.service.MsgXService;
@@ -34,4 +36,14 @@ public class MsgXController {
         return ResponseEntity.ok(result);
     }
 
+    //NOTE: Handle For SINGLE & SECURE_SINGLE TICKET ONLY
+    @PostMapping("/view-ticket")
+    public ResponseEntity<ViewTicketResponse> viewTicket(@RequestBody ViewTicketRequest request,
+                                                         HttpServletRequest httpRequest) {
+        String clientIp = httpRequest.getRemoteAddr();
+        log.info("MsgXController::viewTicket - Viewing ticket {} from IP {}", request.getTicketNumber(), clientIp);
+        ViewTicketResponse response = msgXService.viewTicket(request, clientIp);
+        log.info("MsgXController::viewTicket - Ticket {} viewed successfully", request.getTicketNumber());
+        return ResponseEntity.ok(response);
+    }
 }

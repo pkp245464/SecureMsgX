@@ -9,9 +9,9 @@ import com.secure.MsgX.features.dto.ticketCreateDto.PasskeyDto;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
 import com.secure.MsgX.features.repository.PasskeyRepository;
+import com.secure.MsgX.features.utility.commonUtil.CryptoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,7 +46,7 @@ public class TicketBuilderService {
         ticket.setSalt(salt);
 
         String ipHashSalt  = buildIpHashSalt(salt, hashIpAddress);
-        ticket.setCreatorIpAddress(ipHashSalt );
+        ticket.setCreatorIpAddress(ipHashSalt);
     }
 
     private String buildIpHashSalt(String userSalt, String hashIpAddress) {
@@ -56,14 +56,16 @@ public class TicketBuilderService {
 
     public void encryptMessageContent(TicketCreationRequest request, Ticket ticket) {
         try {
-            byte[] encryptedContent = cryptoService.encryptContent(
+            // CHANGED: Now returns Base64 string
+            String encryptedContent = cryptoService.encryptContent(
                     request.getMessageContent(),
                     request.getPasskeys(),
                     ticket.getSalt(),
                     request.getEncryptionAlgo()
             );
             ticket.setEncryptedMessage(encryptedContent);
-            ticket.setIv(cryptoService.getLastGeneratedIV());
+            // CHANGED: Store IV as Base64 string
+            ticket.setIv(cryptoService.getLastGeneratedIVAsBase64());
         }
         catch (GlobalMsgXExceptions ex) {
             throw new GlobalMsgXExceptions("Encryption failed during ticket creation", ex);
