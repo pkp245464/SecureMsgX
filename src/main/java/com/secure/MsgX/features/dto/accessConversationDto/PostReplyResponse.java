@@ -11,8 +11,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PostReplyResponse {
-    @JsonProperty("reply_id")
-    private String replyId;
+    @JsonProperty("parent_reply_id")
+    private String parentReplyId;
 
     @JsonProperty("status")
     private String status;

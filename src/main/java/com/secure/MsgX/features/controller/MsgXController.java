@@ -66,8 +66,7 @@ public class MsgXController {
         return ResponseEntity.ok(result);
     }
 
-    // NOTE: Currently handles SINGLE, SECURE_SINGLE, and BROADCAST ticket types.
-    // TODO: Extend this endpoint to handle THREAD and GROUP ticket types as well.
+    // NOTE: handles SINGLE, SECURE_SINGLE, and BROADCAST ticket types.
     @PostMapping("/view-ticket")
     public ResponseEntity<ViewTicketResponse> viewTicket(@RequestBody ViewTicketRequest request, HttpServletRequest httpRequest) {
         String clientIp = httpRequest.getRemoteAddr();
@@ -77,8 +76,7 @@ public class MsgXController {
         return ResponseEntity.ok(response);
     }
 
-
-    // NOTE: just added for testing purpose, I will be removed after testing
+    //NOTE: handle THREAD and GROUP ticket types
     @PostMapping("/view-conversation")
     public ResponseEntity<ViewConversationResponse> viewConversation(@RequestBody ViewConversationRequest request, HttpServletRequest httpRequest) {
         String clientIp = httpRequest.getRemoteAddr();
@@ -86,7 +84,6 @@ public class MsgXController {
         return ResponseEntity.ok(response);
     }
 
-    // NOTE: just added for testing purpose, I will be removed after testing
     @PostMapping("/post-reply")
     public ResponseEntity<PostReplyResponse> postReply(@RequestBody PostReplyRequest request, HttpServletRequest httpRequest) {
         String clientIp = httpRequest.getRemoteAddr();
