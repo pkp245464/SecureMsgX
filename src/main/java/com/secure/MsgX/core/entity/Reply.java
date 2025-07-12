@@ -3,6 +3,7 @@ package com.secure.MsgX.core.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Reply {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String replyId;
 
+    @CreationTimestamp
     @Column(name = "created_at")
     private Instant createdAt;
 

@@ -139,7 +139,7 @@ public class TicketViewBuilderService {
         log.info("MsgXServiceImpl::updateTicketStatus - Updated ticket {} status to {}", ticket.getTicketId(), status);
     }
 
-    private void createReadLog(Ticket ticket, String clientIp) {
+    public void createReadLog(Ticket ticket, String clientIp) {
         try {
             ReadLog readLog = new ReadLog();
             readLog.setTicket(ticket);

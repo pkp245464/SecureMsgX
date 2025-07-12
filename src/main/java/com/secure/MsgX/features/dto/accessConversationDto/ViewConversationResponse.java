@@ -28,7 +28,7 @@ public class ViewConversationResponse {
     @JsonProperty("max_views")
     private Long maxViews;
 
-    @JsonProperty("remaining_view")
+    @JsonProperty("remaining_views")
     private Long remainingViews;
 
     @JsonProperty("ticket_status")
@@ -37,6 +37,6 @@ public class ViewConversationResponse {
     @JsonProperty("read_at")
     private Instant readAt;
 
-    @JsonProperty("replies")
-    private List<ConversationNode> replies;
+    @JsonProperty("conversation")
+    private List<ConversationNode> conversation;
 }

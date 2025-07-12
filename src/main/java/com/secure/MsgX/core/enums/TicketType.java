@@ -2,7 +2,7 @@ package com.secure.MsgX.core.enums;
 
 /**
  * TicketType defines message behavior for reply and visibility control.
- *
+
  * Replies AREN'T Allowed:
  *  - SINGLE: One-time private message, up to 5 views allowed.
  *  - SECURE_SINGLE: Highly sensitive message, only 1 view allowed.
