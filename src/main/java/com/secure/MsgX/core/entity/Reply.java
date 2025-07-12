@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,11 +28,17 @@ public class Reply {
     @Column(name = "reply_ip_address")
     private String replyIpAddress;
 
-    @Lob
-    @Column(name = "initialization_vector", nullable = false)
-    private byte[] iv;
+    @Column(name = "initialization_vector", columnDefinition = "TEXT")
+    private String iv;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "ticket_id", nullable = false)
     private Ticket ticket;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_reply_id")
+    private Reply parentReply;
+
+    @OneToMany(mappedBy = "parentReply", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reply> childReplies = new ArrayList<>();
 }
