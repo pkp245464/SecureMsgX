@@ -44,9 +44,11 @@ POST /doors-of-durin/sigil-scrolls/view
 POST /doors-of-durin/sigil-scrolls/replies
 ```
 
-### 🚧 This project is currently under active development. Contributions and suggestions are highly appreciated!
-
 ### 🗑️ Permanently Delete a Sigil Scroll
 ```bash
 DELETE /doors-of-durin/sigil-scrolls/delete/{ticketId}
 ```
+
+---
+### 🚧 This project is currently under active development. Contributions and suggestions are highly appreciated!
+---
