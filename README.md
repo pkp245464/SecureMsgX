@@ -1,4 +1,5 @@
-# 🔐 SecureMsgX - Enchanted Message Vault
+# <img width="736" height="243" alt="Screenshot 2025-07-13 200138" src="https://github.com/user-attachments/assets/634516af-527f-41ac-bcae-b50c88673576" />
+
 
 *"Speak, friend, and enter... but only if you know the secret words"*  
 **A mystical message system with elven-grade encryption and access control**
