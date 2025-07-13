@@ -6,7 +6,7 @@ import com.secure.MsgX.core.entity.Ticket;
 import com.secure.MsgX.core.enums.TicketStatus;
 import com.secure.MsgX.core.enums.TicketType;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
-import com.secure.MsgX.features.dto.accessDto.PasskeyEntry;
+import com.secure.MsgX.features.dto.commonDto.PasskeyEntry;
 import com.secure.MsgX.features.dto.accessDto.ViewTicketResponse;
 import com.secure.MsgX.features.repository.ReadLogRepository;
 import com.secure.MsgX.features.repository.TicketRepository;

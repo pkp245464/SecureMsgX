@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.dto.accessDto;
+package com.secure.MsgX.features.dto.commonDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ViewTicketRequest {
+public class UnifiedViewRequest {
     @JsonProperty("ticket_number")
     private String ticketNumber;
 

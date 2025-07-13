@@ -1,7 +1,7 @@
 package com.secure.MsgX.features.dto.accessConversationDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.secure.MsgX.features.dto.accessDto.PasskeyEntry;
+import com.secure.MsgX.features.dto.commonDto.PasskeyEntry;
 import lombok.Getter;
 import lombok.Setter;
 

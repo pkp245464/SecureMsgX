@@ -4,11 +4,10 @@ package com.secure.MsgX.features.service;
 import com.secure.MsgX.core.entity.Reply;
 import com.secure.MsgX.core.entity.Ticket;
 import com.secure.MsgX.core.enums.TicketStatus;
-import com.secure.MsgX.core.enums.TicketType;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
 import com.secure.MsgX.features.dto.accessConversationDto.*;
-import com.secure.MsgX.features.dto.accessDto.PasskeyEntry;
-import com.secure.MsgX.features.dto.accessDto.ViewTicketRequest;
+import com.secure.MsgX.features.dto.commonDto.PasskeyEntry;
+import com.secure.MsgX.features.dto.commonDto.UnifiedViewRequest;
 import com.secure.MsgX.features.dto.accessDto.ViewTicketResponse;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 
-import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -109,17 +107,33 @@ public class MsgXServiceImpl implements MsgXService{
     }
 
     @Override
-    public ViewTicketResponse viewTicket(ViewTicketRequest request, String clientIp) {
-        log.info("MsgXServiceImpl::viewTicket - Received request to view ticket: {}", request.getTicketNumber());
+    public Object viewUnifiedTicket(UnifiedViewRequest request, String clientIp) {
+        log.info("MsgXServiceImpl::viewUnifiedTicket - Request for ticketNumber: {}", request.getTicketNumber());
 
         // 1. Fetch ticket
         Ticket ticket = ticketRepository.findByTicketNumber(request.getTicketNumber())
                 .orElseThrow(() -> {
-                    log.warn("MsgXServiceImpl::viewTicket - Ticket not found for ticket number: {}", request.getTicketNumber());
+                    log.warn("Ticket not found: {}", request.getTicketNumber());
                     return new GlobalMsgXExceptions("The requested ticket does not exist or has been permanently removed. Please verify the ticket number and try again.");
                 });
 
-        log.info("MsgXServiceImpl::viewTicket - Found ticket ID: {} with type: {}", ticket.getTicketId(), ticket.getTicketType());
+        switch (ticket.getTicketType()) {
+            case SINGLE, SECURE_SINGLE, BROADCAST -> {
+                return viewTicket(request, clientIp, ticket);
+            }
+            case THREAD, GROUP -> {
+                return viewConversation(request, clientIp, ticket);
+            }
+            default -> throw new GlobalMsgXExceptions(
+                    "Oops — the ticket type you're using isn't compatible with this action. " +
+                            "We currently support the following ticket types: SINGLE, SECURE_SINGLE, BROADCAST, THREAD, and GROUP. " +
+                            "Please check your ticket and try again. If you believe this is an error, feel free to reach out to support for help."
+            );
+        }
+    }
+
+    public ViewTicketResponse viewTicket(UnifiedViewRequest request, String clientIp, Ticket ticket) {
+        log.info("MsgXServiceImpl::viewTicket - Received request to view ticket: {}", request.getTicketNumber());
 
         // 2. Validate ticket type
         log.info("MsgXServiceImpl::viewTicket - Validating ticket type");
@@ -153,17 +167,9 @@ public class MsgXServiceImpl implements MsgXService{
         return response;
     }
 
-    @Override
-    public ViewConversationResponse viewConversation(ViewConversationRequest request, String clientIp) {
-        log.info("MsgXServiceImpl::viewConversation - Received request to view conversation for ticket: {}", request.getTicketNumber());
 
-        // 1. Fetch the ticket
-        log.info("MsgXServiceImpl::viewConversation - Fetching ticket from repository");
-        Ticket ticket = ticketRepository.findByTicketNumber(request.getTicketNumber())
-                .orElseThrow(() ->{
-                    log.warn("MsgXServiceImpl::viewConversation - Ticket not found for ticket number: {}", request.getTicketNumber());
-                    return new GlobalMsgXExceptions("The requested ticket does not exist or has been permanently removed. Please verify the ticket number and try again.");
-                });
+    public ViewConversationResponse viewConversation(UnifiedViewRequest request, String clientIp, Ticket ticket) {
+        log.info("MsgXServiceImpl::viewConversation - Received request to view conversation for ticket: {}", request.getTicketNumber());
 
         // 2. Validate ticket type
         log.info("MsgXServiceImpl::viewConversation - Validating ticket type");

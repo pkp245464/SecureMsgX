@@ -1,4 +1,4 @@
-package com.secure.MsgX.features.dto.accessDto;
+package com.secure.MsgX.features.dto.commonDto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;

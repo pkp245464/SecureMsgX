@@ -2,10 +2,7 @@ package com.secure.MsgX.features.controller;
 
 import com.secure.MsgX.features.dto.accessConversationDto.PostReplyRequest;
 import com.secure.MsgX.features.dto.accessConversationDto.PostReplyResponse;
-import com.secure.MsgX.features.dto.accessConversationDto.ViewConversationRequest;
-import com.secure.MsgX.features.dto.accessConversationDto.ViewConversationResponse;
-import com.secure.MsgX.features.dto.accessDto.ViewTicketRequest;
-import com.secure.MsgX.features.dto.accessDto.ViewTicketResponse;
+import com.secure.MsgX.features.dto.commonDto.UnifiedViewRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
 import com.secure.MsgX.features.service.MsgXService;
@@ -66,28 +63,21 @@ public class MsgXController {
         return ResponseEntity.ok(result);
     }
 
-    // NOTE: handles SINGLE, SECURE_SINGLE, and BROADCAST ticket types.
-    @PostMapping("/view-ticket")
-    public ResponseEntity<ViewTicketResponse> viewTicket(@RequestBody ViewTicketRequest request, HttpServletRequest httpRequest) {
+    @PostMapping("/view")
+    public ResponseEntity<?> viewTicketContent(@RequestBody UnifiedViewRequest request, HttpServletRequest httpRequest) {
+        log.info("MsgXController::viewTicketContent - Received request to view ticket: {}", request.getTicketNumber());
         String clientIp = httpRequest.getRemoteAddr();
-        log.info("MsgXController::viewTicket - Viewing ticket {} from IP {}", request.getTicketNumber(), clientIp);
-        ViewTicketResponse response = msgXService.viewTicket(request, clientIp);
-        log.info("MsgXController::viewTicket - Ticket {} viewed successfully", request.getTicketNumber());
+        Object response = msgXService.viewUnifiedTicket(request, clientIp);
+        log.info("MsgXController::viewTicketContent - Successfully processed view for ticket: {}", request.getTicketNumber());
         return ResponseEntity.ok(response);
     }
 
-    //NOTE: handle THREAD and GROUP ticket types
-    @PostMapping("/view-conversation")
-    public ResponseEntity<ViewConversationResponse> viewConversation(@RequestBody ViewConversationRequest request, HttpServletRequest httpRequest) {
-        String clientIp = httpRequest.getRemoteAddr();
-        ViewConversationResponse response = msgXService.viewConversation(request, clientIp);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/post-reply")
-    public ResponseEntity<PostReplyResponse> postReply(@RequestBody PostReplyRequest request, HttpServletRequest httpRequest) {
+    @PostMapping("/replies")
+    public ResponseEntity<PostReplyResponse> replyToTicket(@RequestBody PostReplyRequest request, HttpServletRequest httpRequest) {
+        log.info("MsgXController::postReply - Received request to post reply to ticket: {}", request.getTicketNumber());
         String clientIp = httpRequest.getRemoteAddr();
         PostReplyResponse response = msgXService.postReply(request, clientIp);
+        log.info("MsgXController::postReply - Successfully processed reply for ticket: {}", request.getTicketNumber());
         return ResponseEntity.ok(response);
     }
 }
