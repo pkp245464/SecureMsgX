@@ -1,3 +1,7 @@
+### **🚀🚀🚀 Almost Here! Our Mystical Messaging API Will Go Live Very Soon! 🧙‍♂️🗝️**
+
+---
+
 # <img width="736" height="243" alt="Screenshot 2025-07-13 200138" src="https://github.com/user-attachments/assets/634516af-527f-41ac-bcae-b50c88673576" />
 
 
@@ -39,6 +43,8 @@ POST /doors-of-durin/sigil-scrolls/view
 ```bash
 POST /doors-of-durin/sigil-scrolls/replies
 ```
+
+### 🚧 This project is currently under active development. Contributions and suggestions are highly appreciated!
 
 ### 🗑️ Permanently Delete a Sigil Scroll
 ```bash
