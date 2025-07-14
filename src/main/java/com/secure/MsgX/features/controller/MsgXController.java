@@ -18,32 +18,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/doors-of-durin/sigil-scrolls")
 public class MsgXController {
 
-    // TODO: Enforce passkey creation limits and implement premium token system for extended access
-    /**
-     * Passkey Creation Policy:
-
-     * By default, users are allowed to create a maximum of 3 passkeys when creating a secure ticket.
-     * The system can support up to 10 passkeys per ticket, but allowing that for everyone increases infrastructure costs,
-     * especially due to encryption complexity.
-
-     * Premium Access via Limited-Use Token:
-     * - Users who want to create more than 3 passkeys must purchase a "Premium Passkey Token".
-     * - This token allows creation of tickets with up to 27 passkeys.
-     * - Each token is valid for a limited number of ticket creations (e.g., 27 uses).
-     * - After the limit is exhausted, users must purchase a new token.
-
-     * Implementation Plan:
-     * 1. Enforce a default limit of 3 passkeys during ticket creation.
-     * 2. Build an API to allow users to purchase a premium token (`/purchase-premium-token`).
-     * 3. Track token usage and store the remaining quota (e.g., remainingUses = 10).
-     * 4. When a user submits a ticket with >3 passkeys:
-     *    - Require a valid premium token.
-     *    - Deduct one use from the token.
-     * 5. Optional: Link the token to a user ID or client IP for better control.
-     * 6. Log all premium token usage for billing and auditing.
-     */
-
-
     private final MsgXService msgXService;
 
     @PostMapping("/new-ticket")
