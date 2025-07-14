@@ -2,6 +2,7 @@ package com.secure.MsgX.features.controller;
 
 import com.secure.MsgX.features.dto.accessConversationDto.PostReplyRequest;
 import com.secure.MsgX.features.dto.accessConversationDto.PostReplyResponse;
+import com.secure.MsgX.features.dto.apiUsageDto.ApiUsageMetricsResponse;
 import com.secure.MsgX.features.dto.commonDto.UnifiedViewRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -52,6 +55,14 @@ public class MsgXController {
         String clientIp = httpRequest.getRemoteAddr();
         PostReplyResponse response = msgXService.postReply(request, clientIp);
         log.info("MsgXController::postReply - Successfully processed reply for ticket: {}", request.getTicketNumber());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/api-usage-metrics")
+    public ResponseEntity<List<ApiUsageMetricsResponse>> getApiUsageMetrics() {
+        log.info("MsgXController::getApiUsageMetrics - Fetching API usage metrics");
+        List<ApiUsageMetricsResponse> response = msgXService.getApiUsageMetrics();
+        log.info("MsgXController::getApiUsageMetrics - Retrieved {} API metrics", response.size());
         return ResponseEntity.ok(response);
     }
 }

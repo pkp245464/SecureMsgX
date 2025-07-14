@@ -1,16 +1,21 @@
 package com.secure.MsgX.features.service;
 
 
+import com.secure.MsgX.core.config.ApiUsageConstants;
+import com.secure.MsgX.core.entity.ApiUsageMetrics;
 import com.secure.MsgX.core.entity.Reply;
 import com.secure.MsgX.core.entity.Ticket;
 import com.secure.MsgX.core.enums.TicketStatus;
+import com.secure.MsgX.core.enums.TicketType;
 import com.secure.MsgX.core.exceptions.GlobalMsgXExceptions;
 import com.secure.MsgX.features.dto.accessConversationDto.*;
+import com.secure.MsgX.features.dto.apiUsageDto.ApiUsageMetricsResponse;
 import com.secure.MsgX.features.dto.commonDto.PasskeyEntry;
 import com.secure.MsgX.features.dto.commonDto.UnifiedViewRequest;
 import com.secure.MsgX.features.dto.accessDto.ViewTicketResponse;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationRequest;
 import com.secure.MsgX.features.dto.ticketCreateDto.TicketCreationResponse;
+import com.secure.MsgX.features.repository.ApiUsageMetricsRepository;
 import com.secure.MsgX.features.repository.ReplyRepository;
 import com.secure.MsgX.features.repository.TicketRepository;
 import com.secure.MsgX.features.utility.accessUtil.TicketViewBuilderService;
@@ -37,6 +42,7 @@ public class MsgXServiceImpl implements MsgXService{
 
     private final CryptoService cryptoService;
 
+    private final ApiUsageMetricsRepository apiUsageMetricsRepository;
     private final TicketRepository ticketRepository;
     private final ReplyRepository replyRepository;
 
@@ -80,6 +86,8 @@ public class MsgXServiceImpl implements MsgXService{
             TicketCreationResponse response = ticketBuilderService.buildCreationResponse(savedTicket, ticketCreationRequest.getPasskeys());
             log.info("MsgXServiceImpl::createSecureTicket - Ticket creation response built");
 
+            recordUsage(ApiUsageConstants.POST, ApiUsageConstants.NEW_TICKET, ticketCreationRequest.getTicketType());
+
             return response;
         }
         catch (Exception ex) {
@@ -94,6 +102,9 @@ public class MsgXServiceImpl implements MsgXService{
         return ticketRepository.findById(ticketId).map(ticket -> {
             ticketRepository.delete(ticket);
             log.info("MsgXServiceImpl::permanentlyDeleteTicket - Ticket with ID {} permanently deleted.", ticketId);
+
+            recordUsage(ApiUsageConstants.DELETE, ApiUsageConstants.DELETE_TICKET, ticket.getTicketType());
+
             return "Ticket ID: " + ticketId + " has been permanently deleted." +
                     "This action removed all associated encrypted content, metadata, access logs, replies, and passkeys from the system." +
                     "No trace of this ticket remains in our database or internal services — not even for audit, analytics, or recovery purposes. " +
@@ -164,6 +175,9 @@ public class MsgXServiceImpl implements MsgXService{
         log.info("MsgXServiceImpl::viewTicket - Processing ticket view");
         ViewTicketResponse response = ticketViewBuilderService.processTicketView(ticket, request.getPasskeys(), clientIp);
         log.info("MsgXServiceImpl::viewTicket - Ticket viewed successfully. Returning decrypted content");
+
+        recordUsage(ApiUsageConstants.POST, ApiUsageConstants.VIEW_TICKET, ticket.getTicketType());
+
         return response;
     }
 
@@ -234,6 +248,9 @@ public class MsgXServiceImpl implements MsgXService{
 
         // 11. Build and return response
         log.info("MsgXServiceImpl::viewConversation - Building and returning response");
+
+        recordUsage(ApiUsageConstants.POST, ApiUsageConstants.VIEW_TICKET, ticket.getTicketType());
+
         return ticketConversationBuilderService.buildResponse(ticket, decryptedContent, conversationTree);
     }
 
@@ -311,6 +328,44 @@ public class MsgXServiceImpl implements MsgXService{
 
         // 10. Return response
         log.info("MsgXServiceImpl::postReply - Returning success response for posted reply");
+
+        recordUsage(ApiUsageConstants.POST, ApiUsageConstants.POST_REPLY, ticket.getTicketType());
+
         return new PostReplyResponse(savedReply.getReplyId(), "Reply posted successfully");
+    }
+
+    @Override
+    public List<ApiUsageMetricsResponse> getApiUsageMetrics() {
+        log.info("MsgXServiceImpl::getApiUsageMetrics - Fetching sorted API usage metrics");
+        return apiUsageMetricsRepository.findAllOrderByHitCountDesc()
+                .stream()
+                .map(metric -> ApiUsageMetricsResponse.builder()
+                        .httpMethod(metric.getHttpMethod())
+                        .apiEndpoint(metric.getApiEndpoint())
+                        .ticketType(metric.getTicketType())
+                        .hitCount(metric.getHitCount())
+                        .build())
+                .toList();
+    }
+
+    public void recordUsage(String httpMethod, String apiEndpoint, TicketType ticketType) {
+        ApiUsageMetrics metrics = apiUsageMetricsRepository
+                .findAll()
+                .stream()
+                .filter(m -> m.getHttpMethod().equalsIgnoreCase(httpMethod)
+                        && m.getApiEndpoint().equalsIgnoreCase(apiEndpoint)
+                        && m.getTicketType() == ticketType)
+                .findFirst()
+                .orElseGet(() -> {
+                    ApiUsageMetrics newMetrics = new ApiUsageMetrics();
+                    newMetrics.setHttpMethod(httpMethod.toUpperCase());
+                    newMetrics.setApiEndpoint(apiEndpoint);
+                    newMetrics.setTicketType(ticketType);
+                    return newMetrics;
+                });
+
+        metrics.setHitCount(metrics.getHitCount() + 1);
+        apiUsageMetricsRepository.save(metrics);
+        log.info("ApiUsageMetricsService::recordUsage - Recorded hit for {} {} [{}], total hits = {}", httpMethod, apiEndpoint, ticketType, metrics.getHitCount());
     }
 }
