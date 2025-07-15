@@ -10,35 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Write SSH private key to file
-        run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
 
-      - name: Test SSH connection
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key_path: ~/.ssh/id_rsa
-          script: echo "SSH connection successful"
-          debug: true
-
-      - name: Deploy on EC2
-        if: success()  # Only run if SSH connection succeeded
-        uses: appleboy/ssh-action@v0.1.4
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key_path: ~/.ssh/id_rsa
-          script: |
-            cd /home/ubuntu
-            export DB_USERNAME=${{ secrets.DB_USERNAME }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            export DB_URL=${{ secrets.DB_URL }}
-            docker-compose down
-            docker-compose up -d --build
-          debug: true
+    - name: Deploy on EC2
+      uses: appleboy/ssh-action@v0.1.4
+      with:
+        host: ${{ secrets.EC2_PUBLIC_IP }}
+        username: ubuntu
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          cd /home/ubuntu
+          export DB_USERNAME=${{ secrets.DB_USERNAME }}
+          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          export DB_URL=${{ secrets.DB_URL }}
+          docker-compose down
+          docker-compose up -d --build
