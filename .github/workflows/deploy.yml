@@ -1,50 +1,39 @@
-name: Deploy to AWS
+name: Deploy to EC2
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
+      - name: Write SSH private key to file
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-
-      - name: Copy files to EC2
-        uses: appleboy/scp-action@v0.1.3
-        with:
-          host: ${{ secrets.EC2_PUBLIC_IP }}
-          username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "Dockerfile,docker-compose.yml,target/*.jar"
-          target: /home/ubuntu/
-
-      - name: Deploy on EC2
+      - name: Test SSH connection
         uses: appleboy/ssh-action@v0.1.4
         with:
           host: ${{ secrets.EC2_PUBLIC_IP }}
           username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: 22
+          key_path: ~/.ssh/id_rsa
+          script: echo "SSH connection successful"
+          debug: true
+
+      - name: Deploy on EC2
+        if: success()  # Only run if SSH connection succeeded
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key_path: ~/.ssh/id_rsa
           script: |
             cd /home/ubuntu
             export DB_USERNAME=${{ secrets.DB_USERNAME }}
@@ -52,3 +41,4 @@ jobs:
             export DB_URL=${{ secrets.DB_URL }}
             docker-compose down
             docker-compose up -d --build
+          debug: true
