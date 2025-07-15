@@ -13,11 +13,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH key and known hosts
+    - name: Add EC2 host to known_hosts
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
         ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
 
     - name: Deploy on EC2
@@ -25,7 +23,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_PUBLIC_IP }}
         username: ubuntu
-        key_path: ~/.ssh/id_rsa
+        key: ${{ secrets.SSH_PRIVATE_KEY }}   # Pass private key string here
         port: 22
         script: |
           cd /home/ubuntu
