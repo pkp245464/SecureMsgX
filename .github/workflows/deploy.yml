@@ -1,46 +1,68 @@
-name: Deploy to EC2 with Debug
+name: Deploy SecureMsgX
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
-        ls -la ~/.ssh
-        cat ~/.ssh/id_rsa | head -n 5
-        cat ~/.ssh/known_hosts
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
 
-    - name: Test SSH connection (verbose)
-      env:
-        HOST: ${{ secrets.EC2_PUBLIC_IP }}
-      run: |
-        ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$HOST exit || echo "SSH connection failed"
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
 
-    - name: Deploy on EC2
-      uses: appleboy/ssh-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_PUBLIC_IP }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        port: 22
-        script: |
-          echo "Logged into EC2 successfully!"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Critical SSH Fix Starts Here
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Verify SSH Connection
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              -T ubuntu@${{ secrets.EC2_PUBLIC_IP }} \
+              "echo 'SSH connection successful!'"
+
+      - name: Copy files to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no \
+              Dockerfile docker-compose.yml target/*.jar \
+              ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/
+
+      # Docker-compose deployment
+      - name: Deploy Application
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
           cd /home/ubuntu
-          export DB_USERNAME=${{ secrets.DB_USERNAME }}
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_URL=${{ secrets.DB_URL }}
-          docker-compose down
+          echo "Setting environment variables"
+          export DB_USERNAME='${{ secrets.DB_USERNAME }}'
+          export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
+          export DB_URL='${{ secrets.DB_URL }}'
+          
+          echo "Stopping existing containers"
+          docker-compose down || true
+          
+          echo "Starting new deployment"
           docker-compose up -d --build
+          
+          echo "Deployment complete!"
+          EOF
+      # Critical SSH Fix Ends Here
