@@ -13,7 +13,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up SSH
+    - name: Set up SSH key and known hosts
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
@@ -25,7 +25,7 @@ jobs:
       with:
         host: ${{ secrets.EC2_PUBLIC_IP }}
         username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key_path: ~/.ssh/id_rsa
         port: 22
         script: |
           cd /home/ubuntu
