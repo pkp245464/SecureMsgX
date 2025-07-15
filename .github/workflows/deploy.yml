@@ -1,4 +1,4 @@
-name: Deploy to EC2
+name: Deploy to EC2 with Debugging
 
 on:
   push:
@@ -8,27 +8,46 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Add EC2 host to known_hosts
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+      - name: Prepare SSH config and known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.EC2_PUBLIC_IP }} >> ~/.ssh/known_hosts
+          ls -la ~/.ssh
+          cat ~/.ssh/known_hosts
 
-    - name: Deploy on EC2
-      uses: appleboy/ssh-action@v0.1.4
-      with:
-        host: ${{ secrets.EC2_PUBLIC_IP }}
-        username: ubuntu
-        key: ${{ secrets.SSH_PRIVATE_KEY }}   # Pass private key string here
-        port: 22
-        script: |
-          cd /home/ubuntu
-          export DB_USERNAME=${{ secrets.DB_USERNAME }}
-          export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-          export DB_URL=${{ secrets.DB_URL }}
-          docker-compose down
-          docker-compose up -d --build
+      - name: Check SSH private key (first 5 lines)
+        run: |
+          echo "Checking private key format:"
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" | head -n 5
+
+      - name: Test SSH connection manually (verbose)
+        env:
+          PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          HOST: ${{ secrets.EC2_PUBLIC_IP }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $HOST >> ~/.ssh/known_hosts
+          echo "Trying ssh connection with verbose logging:"
+          ssh -vvv -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ubuntu@$HOST exit || echo "SSH connection failed"
+
+      - name: Deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Logged into EC2 successfully!"
+            cd /home/ubuntu
+            export DB_USERNAME=${{ secrets.DB_USERNAME }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DB_URL=${{ secrets.DB_URL }}
+            docker-compose down
+            docker-compose up -d --build
