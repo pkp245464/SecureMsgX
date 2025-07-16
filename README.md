@@ -1,6 +1,3 @@
-### **🚀🚀🚀 Almost Here! Our Mystical Messaging API Will Go Live Very Soon! 🧙‍♂️🗝️**
-
----
 # <img width="1536" height="643" alt="logo" src="https://github.com/user-attachments/assets/e3fb1989-dc9f-4f38-a703-3092c541fbc7" />
 
 
