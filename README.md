@@ -46,5 +46,5 @@ DELETE /doors-of-durin/sigil-scrolls/delete/{ticketId}
 ```
 
 ---
-### 🚧 This project is currently under active development. Contributions and suggestions are highly appreciated!
+### 🚧 We warmly welcome your feedback, suggestions, and feature requests to help us enhance SecureMsgX and better serve your needs.
 ---
