@@ -1,8 +1,7 @@
 ### **🚀🚀🚀 Almost Here! Our Mystical Messaging API Will Go Live Very Soon! 🧙‍♂️🗝️**
 
 ---
-
-# <img width="736" height="243" alt="Screenshot 2025-07-13 200138" src="https://github.com/user-attachments/assets/634516af-527f-41ac-bcae-b50c88673576" />
+# <img width="1536" height="643" alt="logo" src="https://github.com/user-attachments/assets/e3fb1989-dc9f-4f38-a703-3092c541fbc7" />
 
 
 *"Speak, friend, and enter... but only if you know the secret words"*  
